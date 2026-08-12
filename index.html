@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Previsão do Tempo</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <main class="container">
+
+        <h1>🌤️ Previsão do Tempo</h1>
+
+        <p>
+            Consulte as condições climáticas da sua cidade.
+        </p>
+
+        <form id="form-clima">
+
+            <label for="cidade">
+                Digite o nome da cidade:
+            </label>
+
+            <div class="formulario">
+
+                <input
+                    type="text"
+                    id="cidade"
+                    name="cidade"
+                    placeholder="Ex.: São Paulo"
+                    required
+                >
+
+                <button type="submit">
+                    Consultar
+                </button>
+
+            </div>
+
+        </form>
+
+        <div id="mensagem"></div>
+
+        <section
+            id="resultado"
+            class="resultado"
+            hidden
+        >
+
+            <h2 id="nome-cidade"></h2>
+
+            <p class="temperatura">
+                <span id="temperatura"></span> °C
+            </p>
+
+            <p id="descricao"></p>
+
+        </section>
+
+    </main>
+
+    <script>
+
+        // Elementos do HTML
+        const formulario = document.getElementById("form-clima");
+        const campoCidade = document.getElementById("cidade");
+
+        const resultado = document.getElementById("resultado");
+        const nomeCidade = document.getElementById("nome-cidade");
+        const temperatura = document.getElementById("temperatura");
+        const descricao = document.getElementById("descricao");
+
+        const mensagem = document.getElementById("mensagem");
+
+        // Escuta o envio do formulário
+        formulario.addEventListener("submit", async (event) => {
+
+            // Impede o navegador de recarregar a página
+            event.preventDefault();
+
+            // Obtém o valor digitado
+            const cidade = campoCidade.value.trim();
+
+            // Limpa mensagens anteriores
+            mensagem.textContent = "";
+
+            // Esconde o resultado anterior
+            resultado.hidden = true;
+
+            // Verifica se o campo está vazio
+            if (!cidade) {
+                mensagem.textContent =
+                    "Digite o nome de uma cidade.";
+
+                return;
+            }
+
+            try {
+
+                // Consulta nosso Backend
+                const resposta = await fetch(
+                    `http://localhost:3000/clima?cidade=${encodeURIComponent(cidade)}`
+                );
+
+                // Converte a resposta para JSON
+                const dados = await resposta.json();
+
+                // Verifica se o Backend retornou erro
+                if (!resposta.ok) {
+                    throw new Error(
+                        dados.erro || "Erro ao consultar o clima."
+                    );
+                }
+
+                // Exibe os dados
+                nomeCidade.textContent = dados.cidade;
+
+                temperatura.textContent = dados.temperatura;
+
+                descricao.textContent = dados.descricao;
+
+                // Mostra o resultado
+                resultado.hidden = false;
+
+            } catch (erro) {
+
+                console.error("Erro:", erro);
+
+                mensagem.textContent =
+                    erro.message ||
+                    "Não foi possível consultar o clima.";
+            }
+
+        });
+
+    </script>
+
+</body>
+
+</html>

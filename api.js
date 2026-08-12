@@ -83,14 +83,13 @@ const server = http.createServer(async (req, res) => {
             return;
         }
 
-        // Consulta a API de geocodificação
         try {
 
             // Monta a URL da API de geocodificação
             const geocodingUrl =
                 `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(cidade)}&count=1&language=pt&format=json`;
 
-            // Faz a requisição para a API
+            // Faz a requisição para a API de geocodificação
             const resposta = await fetch(geocodingUrl);
 
             // Verifica se a API respondeu com erro HTTP
@@ -117,7 +116,7 @@ const server = http.createServer(async (req, res) => {
             // Obtém os dados da primeira cidade encontrada
             const localizacao = dados.results[0];
 
-            // Obtém latitude e longitude da cidade
+            // Obtém latitude e longitude
             const latitude = localizacao.latitude;
             const longitude = localizacao.longitude;
 
@@ -139,12 +138,18 @@ const server = http.createServer(async (req, res) => {
             const dadosClima = await respostaClima.json();
 
             // Obtém a temperatura atual
-            const temperatura = dadosClima.current.temperature_2m;
-            const weatherCode = dadosClima.current.weather_code;
+            const temperatura =
+                dadosClima.current.temperature_2m;
 
-            const descricao = obterDescricaoClima(weatherCode);
+            // Obtém o código meteorológico
+            const weatherCode =
+                dadosClima.current.weather_code;
 
-            // Retorna os dados encontrados
+            // Converte o código em descrição
+            const descricao =
+                obterDescricaoClima(weatherCode);
+
+            // Retorna os dados para o Frontend
             res.statusCode = 200;
 
             res.end(JSON.stringify({
@@ -157,12 +162,14 @@ const server = http.createServer(async (req, res) => {
 
         } catch (erro) {
 
-            console.error("Erro:", erro.message);
+            // Registra o erro somente no servidor
+            console.error("Erro completo:", erro);
 
             res.statusCode = 500;
 
+            // Não expõe detalhes internos ao usuário
             res.end(JSON.stringify({
-                erro: "Não foi possível consultar a localização da cidade."
+                erro: "Não foi possível consultar os dados do clima."
             }));
         }
 
