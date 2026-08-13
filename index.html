@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Previsão do Tempo</title>
+
+
+    <!-- CSS do projeto -->
+
+    <link
+        rel="stylesheet"
+        href="style.css"
+    >
+
+
+    <!-- Weather Icons -->
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/weather-icons/2.0.12/css/weather-icons.min.css"
+    >
+
+</head>
+
+
+<body>
+
+
+    <main class="container">
+
+
+        <!-- ==========================================
+             TÍTULO
+        =========================================== -->
+
+        <h1>
+            Previsão do Tempo
+        </h1>
+
+
+        <p>
+            Digite o nome de uma cidade para consultar o clima.
+        </p>
+
+
+        <!-- ==========================================
+             FORMULÁRIO
+        =========================================== -->
+
+        <form id="formClima">
+
+
+            <label for="cidade">
+                Cidade:
+            </label>
+
+
+            <input
+                type="text"
+                id="cidade"
+                name="cidade"
+                placeholder="Ex.: São Paulo"
+                autocomplete="off"
+                required
+            >
+
+
+            <button
+                type="submit"
+                id="botaoConsultar"
+            >
+
+                <i class="wi wi-search"></i>
+
+                <span>
+                    Consultar
+                </span>
+
+            </button>
+
+
+        </form>
+
+
+        <!-- ==========================================
+             RESULTADO
+        =========================================== -->
+
+        <section
+            id="resultado"
+            class="resultado"
+        >
+
+            <p class="mensagem">
+                Informe uma cidade para consultar o clima.
+            </p>
+
+        </section>
+
+
+    </main>
+
+
+
+    <script>
+
+
+        // ==========================================
+        // ELEMENTOS DO HTML
+        // ==========================================
+
+        const formClima =
+            document.getElementById("formClima");
+
+
+        const cidadeInput =
+            document.getElementById("cidade");
+
+
+        const botaoConsultar =
+            document.getElementById("botaoConsultar");
+
+
+        const resultado =
+            document.getElementById("resultado");
+
+
+
+        // ==========================================
+        // FUNÇÃO PARA ESCOLHER O ÍCONE DO CLIMA
+        // ==========================================
+
+        function obterIconeClima(code) {
+
+
+            if (code === 0) {
+
+                return "wi-day-sunny";
+
+            }
+
+
+            if (code === 1) {
+
+                return "wi-day-sunny-overcast";
+
+            }
+
+
+            if (code === 2) {
+
+                return "wi-day-cloudy";
+
+            }
+
+
+            if (code === 3) {
+
+                return "wi-cloudy";
+
+            }
+
+
+            if (code >= 45 && code <= 48) {
+
+                return "wi-fog";
+
+            }
+
+
+            if (code >= 51 && code <= 57) {
+
+                return "wi-sprinkle";
+
+            }
+
+
+            if (code >= 61 && code <= 67) {
+
+                return "wi-rain";
+
+            }
+
+
+            if (code >= 71 && code <= 77) {
+
+                return "wi-snow";
+
+            }
+
+
+            if (code >= 80 && code <= 82) {
+
+                return "wi-showers";
+
+            }
+
+
+            if (code >= 85 && code <= 86) {
+
+                return "wi-snow-wind";
+
+            }
+
+
+            if (code >= 95 && code <= 99) {
+
+                return "wi-thunderstorm";
+
+            }
+
+
+            return "wi-na";
+
+        }
+
+
+
+        // ==========================================
+        // FUNÇÃO PARA ATUALIZAR O TEMA
+        // ==========================================
+
+        function atualizarTema(isDay) {
+
+
+            if (isDay === 1) {
+
+
+                document.body.classList.remove(
+                    "noite"
+                );
+
+
+                document.body.classList.add(
+                    "dia"
+                );
+
+
+            } else {
+
+
+                document.body.classList.remove(
+                    "dia"
+                );
+
+
+                document.body.classList.add(
+                    "noite"
+                );
+
+            }
+
+        }
+
+
+
+        // ==========================================
+        // FUNÇÃO PARA FORMATAR A DATA
+        // ==========================================
+
+        function formatarData(data) {
+
+
+            const partes =
+                data.split("-");
+
+
+            const ano =
+                Number(partes[0]);
+
+
+            const mes =
+                Number(partes[1]);
+
+
+            const dia =
+                Number(partes[2]);
+
+
+            /*
+                Usamos meio-dia para evitar
+                alterações de data causadas
+                pelo fuso horário do navegador.
+            */
+
+            const dataObjeto =
+                new Date(
+                    ano,
+                    mes - 1,
+                    dia,
+                    12,
+                    0,
+                    0
+                );
+
+
+            return dataObjeto.toLocaleDateString(
+                "pt-BR",
+                {
+
+                    weekday: "long",
+
+                    day: "numeric",
+
+                    month: "long",
+
+                    year: "numeric"
+
+                }
+            );
+
+        }
+
+
+
+        // ==========================================
+        // EVENTO DO FORMULÁRIO
+        // ==========================================
+
+        formClima.addEventListener(
+            "submit",
+            async (evento) => {
+
+
+                // Impede o recarregamento da página
+
+                evento.preventDefault();
+
+
+
+                // ==================================
+                // OBTÉM A CIDADE
+                // ==================================
+
+                const cidade =
+                    cidadeInput.value.trim();
+
+
+
+                // ==================================
+                // VALIDAÇÃO
+                // ==================================
+
+                if (!cidade) {
+
+
+                    resultado.innerHTML = `
+
+                        <p class="erro">
+                            Informe o nome de uma cidade.
+                        </p>
+
+                    `;
+
+
+                    return;
+
+                }
+
+
+
+                // ==================================
+                // DESABILITA O BOTÃO
+                // ==================================
+
+                botaoConsultar.disabled = true;
+
+
+                botaoConsultar.innerHTML = `
+
+                    <i class="wi wi-refresh"></i>
+
+                    <span>
+                        Consultando...
+                    </span>
+
+                `;
+
+
+
+                // ==================================
+                // MENSAGEM DE CARREGAMENTO
+                // ==================================
+
+                resultado.innerHTML = `
+
+                    <p class="mensagem carregando">
+
+                        <i class="wi wi-refresh"></i>
+
+                        Consultando o clima...
+
+                    </p>
+
+                `;
+
+
+
+                try {
+
+
+                    // ==================================
+                    // CRIA OS PARÂMETROS
+                    // ==================================
+
+                    const parametros =
+                        new URLSearchParams({
+
+                            cidade: cidade
+
+                        });
+
+
+
+                    // ==================================
+                    // URL DO BACKEND
+                    // ==================================
+
+                    const url =
+                        `http://localhost:3000/clima?${parametros}`;
+
+
+
+                    console.log(
+                        "URL consultada:",
+                        url
+                    );
+
+
+
+                    // ==================================
+                    // FAZ A REQUISIÇÃO
+                    // ==================================
+
+                    const resposta =
+                        await fetch(url);
+
+
+
+                    // ==================================
+                    // CONVERTE PARA JSON
+                    // ==================================
+
+                    const dados =
+                        await resposta.json();
+
+
+
+                    console.log(
+                        "Dados recebidos:",
+                        dados
+                    );
+
+
+
+                    // ==================================
+                    // VERIFICA ERRO
+                    // ==================================
+
+                    if (!resposta.ok) {
+
+
+                        resultado.innerHTML = `
+
+                            <p class="erro">
+
+                                ${
+                                    dados.erro ||
+                                    "Não foi possível consultar o clima."
+                                }
+
+                            </p>
+
+                        `;
+
+
+                        return;
+
+                    }
+
+
+
+                    // ==================================
+                    // ATUALIZA DIA / NOITE
+                    // ==================================
+
+                    atualizarTema(
+                        dados.isDay
+                    );
+
+
+
+                    // ==================================
+                    // SEPARA DATA E HORA
+                    // ==================================
+
+                    const [data, hora] =
+                        dados.horario.split("T");
+
+
+
+                    // ==================================
+                    // FORMATA A DATA
+                    // ==================================
+
+                    const dataFormatada =
+                        formatarData(data);
+
+
+
+                    // ==================================
+                    // HORA LOCAL DA CIDADE
+                    // ==================================
+
+                    /*
+                        A API já envia a hora local
+                        da cidade consultada.
+
+                        Portanto, não usamos
+                        new Date() para a hora.
+                    */
+
+                    const horaFormatada =
+                        hora;
+
+
+
+                    // ==================================
+                    // OBTÉM O ÍCONE
+                    // ==================================
+
+                    const iconeClima =
+                        obterIconeClima(
+                            dados.codigoClima
+                        );
+
+
+
+                    // ==================================
+                    // EXIBE O RESULTADO
+                    // ==================================
+
+                    resultado.innerHTML = `
+
+
+                        <h2>
+                            ${dados.cidade}
+                        </h2>
+
+
+
+                        <i
+                            class="wi ${iconeClima} icone-clima"
+                        ></i>
+
+
+
+                        <p class="temperatura">
+                            ${dados.temperatura} °C
+                        </p>
+
+
+
+                        <p class="descricao">
+                            ${dados.descricao}
+                        </p>
+
+
+
+                        <p class="data">
+                            ${dataFormatada}
+                        </p>
+
+
+
+                        <p class="hora">
+                            Horário atual: ${horaFormatada}
+                        </p>
+
+
+
+                        <!-- ==================================
+                             INFORMAÇÕES ADICIONAIS
+                        =================================== -->
+
+                        <div class="informacoes-clima">
+
+
+                            <!-- UMIDADE -->
+
+                            <div class="informacao">
+
+
+                                <i class="wi wi-humidity"></i>
+
+
+                                <div>
+
+                                    <span>
+                                        Umidade
+                                    </span>
+
+
+                                    <strong>
+                                        ${dados.umidade}%
+                                    </strong>
+
+                                </div>
+
+
+                            </div>
+
+
+
+                            <!-- VENTO -->
+
+                            <div class="informacao">
+
+
+                                <i class="wi wi-strong-wind"></i>
+
+
+                                <div>
+
+                                    <span>
+                                        Vento
+                                    </span>
+
+
+                                    <strong>
+                                        ${dados.velocidadeVento} km/h
+                                    </strong>
+
+                                </div>
+
+
+                            </div>
+
+
+                        </div>
+
+                    `;
+
+
+                } catch (erro) {
+
+
+                    // ==================================
+                    // TRATAMENTO DE ERRO
+                    // ==================================
+
+                    console.error(
+                        "Erro:",
+                        erro
+                    );
+
+
+                    resultado.innerHTML = `
+
+                        <p class="erro">
+
+                            Não foi possível consultar o clima.
+
+                        </p>
+
+                    `;
+
+
+                } finally {
+
+
+                    // ==================================
+                    // RESTAURA O BOTÃO
+                    // ==================================
+
+                    botaoConsultar.disabled = false;
+
+
+                    botaoConsultar.innerHTML = `
+
+                        <i class="wi wi-search"></i>
+
+                        <span>
+                            Consultar
+                        </span>
+
+                    `;
+
+                }
+
+            }
+        );
+
+
+    </script>
+
+
+</body>
+
+</html>

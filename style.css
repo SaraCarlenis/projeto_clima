@@ -1,0 +1,585 @@
+/* =====================================================
+   RESET
+===================================================== */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+
+/* =====================================================
+   BODY
+===================================================== */
+
+body {
+    font-family: Arial, sans-serif;
+    min-height: 100vh;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    background: #eaf4ff;
+    color: #222;
+
+    transition:
+        background 0.5s ease,
+        color 0.5s ease;
+}
+
+
+/* =====================================================
+   TEMA DIA
+===================================================== */
+
+body.dia {
+    background: #eaf4ff;
+    color: #222;
+}
+
+
+/* =====================================================
+   TEMA NOITE
+===================================================== */
+
+body.noite {
+    background: #172033;
+    color: white;
+}
+
+
+/* =====================================================
+   CONTAINER
+===================================================== */
+
+.container {
+    width: 90%;
+    max-width: 500px;
+
+    padding: 30px;
+
+    background: white;
+
+    border-radius: 15px;
+
+    text-align: center;
+
+    box-shadow:
+        0 5px 20px rgba(0, 0, 0, 0.1);
+
+    transition:
+        background 0.5s ease,
+        box-shadow 0.5s ease;
+}
+
+
+/* Container no modo noite */
+
+body.noite .container {
+    background: #26334a;
+}
+
+
+/* =====================================================
+   TÍTULO
+===================================================== */
+
+h1 {
+    margin-bottom: 10px;
+
+    font-size: 32px;
+}
+
+
+/* =====================================================
+   TEXTO PRINCIPAL
+===================================================== */
+
+.container > p {
+    margin-bottom: 25px;
+
+    line-height: 1.5;
+}
+
+
+/* =====================================================
+   FORMULÁRIO
+===================================================== */
+
+form {
+    display: flex;
+    flex-direction: column;
+
+    gap: 10px;
+
+    text-align: left;
+}
+
+
+/* =====================================================
+   LABEL
+===================================================== */
+
+label {
+    font-weight: bold;
+}
+
+
+/* =====================================================
+   INPUT
+===================================================== */
+
+input {
+    width: 100%;
+
+    padding: 12px;
+
+    border: 1px solid #ccc;
+    border-radius: 8px;
+
+    font-size: 16px;
+
+    outline: none;
+
+    transition:
+        border 0.3s ease,
+        box-shadow 0.3s ease;
+}
+
+
+input:focus {
+    border-color: #1976d2;
+
+    box-shadow:
+        0 0 0 3px rgba(25, 118, 210, 0.15);
+}
+
+
+/* =====================================================
+   BOTÃO
+===================================================== */
+
+button {
+    padding: 12px;
+
+    border: none;
+    border-radius: 8px;
+
+    background: #1976d2;
+    color: white;
+
+    font-size: 16px;
+
+    cursor: pointer;
+
+    transition:
+        background 0.3s ease,
+        transform 0.2s ease;
+}
+
+
+button:hover {
+    background: #125ca1;
+
+    transform: translateY(-1px);
+}
+
+
+button:active {
+    transform: translateY(0);
+}
+
+
+/* =====================================================
+   RESULTADO
+===================================================== */
+
+.resultado {
+    margin-top: 25px;
+
+    padding: 25px;
+
+    border-radius: 12px;
+
+    background: #f5f9ff;
+
+    transition:
+        background 0.5s ease;
+}
+
+
+/* Resultado no modo noite */
+
+body.noite .resultado {
+    background: #34445f;
+}
+
+
+/* =====================================================
+   NOME DA CIDADE
+===================================================== */
+
+.resultado h2 {
+    margin-bottom: 15px;
+
+    font-size: 28px;
+}
+
+
+/* =====================================================
+   ÍCONE DO CLIMA
+===================================================== */
+
+.icone-clima {
+    display: block;
+
+    margin: 10px 0 15px;
+
+    font-size: 70px;
+}
+
+
+/* =====================================================
+   TEMPERATURA
+===================================================== */
+
+.temperatura {
+    margin: 10px 0;
+
+    font-size: 48px;
+
+    font-weight: bold;
+}
+
+
+/* =====================================================
+   DESCRIÇÃO
+===================================================== */
+
+.descricao {
+    margin-bottom: 20px;
+
+    font-size: 20px;
+}
+
+
+/* =====================================================
+   DATA E HORA
+===================================================== */
+
+.data,
+.hora {
+    margin-top: 8px;
+
+    font-size: 15px;
+}
+
+
+.hora {
+    font-weight: bold;
+}
+
+
+/* =====================================================
+   MENSAGEM
+===================================================== */
+
+.mensagem {
+    color: #555;
+
+    line-height: 1.5;
+}
+
+
+/* Mensagem no modo noite */
+
+body.noite .mensagem {
+    color: #ddd;
+}
+
+
+/* =====================================================
+   ERRO
+===================================================== */
+
+.erro {
+    color: #c62828;
+
+    font-weight: bold;
+
+    line-height: 1.5;
+}
+
+
+/* =====================================================
+   RESPONSIVIDADE
+===================================================== */
+
+@media (max-width: 600px) {
+
+    body {
+        padding: 20px;
+    }
+
+
+    .container {
+        width: 100%;
+
+        padding: 20px;
+    }
+
+
+    h1 {
+        font-size: 26px;
+    }
+
+
+    .resultado h2 {
+        font-size: 24px;
+    }
+
+
+    .temperatura {
+        font-size: 40px;
+    }
+
+
+    .icone-clima {
+        font-size: 60px;
+    }
+
+
+    .descricao {
+        font-size: 18px;
+    }
+
+}
+
+.carregando {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+
+.carregando i {
+    font-size: 24px;
+    animation: girar 1s linear infinite;
+}
+
+@keyframes girar {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* =====================================================
+   INFORMAÇÕES ADICIONAIS
+===================================================== */
+
+.umidade,
+.vento {
+    margin-top: 8px;
+    font-size: 16px;
+}
+
+/* =====================================================
+   INFORMAÇÕES ADICIONAIS DO CLIMA
+===================================================== */
+
+.informacoes-clima {
+    display: grid;
+
+    grid-template-columns: 1fr 1fr;
+
+    gap: 12px;
+
+    margin-top: 25px;
+}
+
+
+/* =====================================================
+   CARD DE INFORMAÇÃO
+===================================================== */
+
+.informacao {
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 10px;
+
+    padding: 15px;
+
+    background: white;
+
+    border-radius: 10px;
+
+    border: 1px solid #e1e8f0;
+
+    transition:
+        background 0.3s ease,
+        transform 0.2s ease;
+}
+
+
+.informacao:hover {
+    transform: translateY(-2px);
+}
+
+
+/* =====================================================
+   ÍCONE DAS INFORMAÇÕES
+===================================================== */
+
+.informacao > i {
+    font-size: 28px;
+
+    color: #1976d2;
+}
+
+
+/* =====================================================
+   TEXTO DA INFORMAÇÃO
+===================================================== */
+
+.informacao div {
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: flex-start;
+
+    gap: 3px;
+}
+
+
+.informacao span {
+    font-size: 13px;
+
+    color: #666;
+}
+
+
+.informacao strong {
+    font-size: 16px;
+}
+
+
+/* =====================================================
+   MODO NOITE
+===================================================== */
+
+body.noite .informacao {
+    background: #26334a;
+
+    border-color: #40516d;
+}
+
+
+body.noite .informacao span {
+    color: #ccc;
+}
+
+
+body.noite .informacao > i {
+    color: #64b5f6;
+}
+
+
+/* =====================================================
+   RESPONSIVIDADE
+===================================================== */
+
+@media (max-width: 600px) {
+
+    .informacoes-clima {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+/* =====================================================
+   CAMPO DE PESQUISA
+===================================================== */
+
+.campo-pesquisa {
+    position: relative;
+
+    width: 100%;
+}
+
+
+/* =====================================================
+   ÍCONE DA PESQUISA
+===================================================== */
+
+.campo-pesquisa > i {
+    position: absolute;
+
+    left: 15px;
+
+    top: 50%;
+
+    transform: translateY(-50%);
+
+    font-size: 20px;
+
+    color: #777;
+
+    pointer-events: none;
+}
+
+
+/* =====================================================
+   INPUT COM ÍCONE
+===================================================== */
+
+.campo-pesquisa input {
+    padding-left: 45px;
+}
+
+
+/* =====================================================
+   BOTÃO
+===================================================== */
+
+#botaoConsultar {
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 8px;
+}
+
+
+/* =====================================================
+   ÍCONE DO BOTÃO
+===================================================== */
+
+#botaoConsultar i {
+    font-size: 18px;
+}
+
+
+/* =====================================================
+   BOTÃO DESABILITADO
+===================================================== */
+
+#botaoConsultar:disabled {
+    background: #90caf9;
+
+    cursor: not-allowed;
+
+    transform: none;
+}
