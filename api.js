@@ -2,7 +2,7 @@ const http = require("http");
 const https = require("https");
 const { URL } = require("url");
 
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 /**
  * Converte o código meteorológico da Open-Meteo
@@ -62,19 +62,24 @@ function obterDescricaoClima(code) {
 
 
 /**
- * Faz uma requisição HTTPS utilizando o módulo nativo do Node.js.
+ * Faz uma requisição HTTP(S) utilizando apenas módulos nativos do Node.js.
  *
- * A função recebe uma URL e retorna os dados da API
- * convertidos de JSON para objeto JavaScript.
+ * Escolhe automaticamente o módulo `http` ou `https` de acordo com o
+ * protocolo da URL informada. Isso permite que, em produção, a aplicação
+ * continue consultando a Open-Meteo via HTTPS normalmente, e que os
+ * testes automatizados apontem para servidores HTTP locais (sem exigir
+ * certificados TLS).
  *
  * @param {string} url URL da API.
- * @returns {Promise<Object>} Dados retornados pela API.
+ * @returns {Promise<Object>} Dados retornados pela API, convertidos de JSON.
  */
 function consultarApiHttps(url) {
 
     return new Promise((resolve, reject) => {
 
-        https.get(url, (res) => {
+        const protocolo = url.startsWith("https:") ? https : http;
+
+        protocolo.get(url, (res) => {
 
             let dados = "";
 
@@ -125,16 +130,17 @@ function consultarApiHttps(url) {
 
 
 /**
- * Faz uma requisição HTTPS com tentativas automáticas.
+ * Faz uma requisição HTTP(S) com tentativas automáticas.
  *
  * Se ocorrer uma falha, a função tenta novamente
  * até atingir o número máximo de tentativas.
  *
  * @param {string} url URL da API.
- * @param {number} tentativas Número máximo de tentativas.
+ * @param {number} [tentativas=3] Número máximo de tentativas.
+ * @param {number} [delayMs=1000] Tempo de espera (ms) entre tentativas.
  * @returns {Promise<Object>} Dados retornados pela API.
  */
-async function consultarApiHttpsComTentativas(url, tentativas = 3) {
+async function consultarApiHttpsComTentativas(url, tentativas = 3, delayMs = 1000) {
 
     for (let tentativa = 1; tentativa <= tentativas; tentativa++) {
 
@@ -161,102 +167,90 @@ async function consultarApiHttpsComTentativas(url, tentativas = 3) {
                 throw erro;
             }
 
-            // Aguarda 1 segundo antes de tentar novamente
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            // Aguarda antes de tentar novamente
+            await new Promise(resolve => setTimeout(resolve, delayMs));
         }
     }
 }
 
 
 /**
- * Criação do servidor HTTP.
+ * Cria (sem iniciar) o servidor HTTP da aplicação.
+ *
+ * As URLs base da API de geocodificação e de previsão do tempo, o número
+ * de tentativas e o tempo entre elas são configuráveis. Isso permite que
+ * os testes automatizados injetem servidores mock locais no lugar da
+ * Open-Meteo real, sem alterar o comportamento em produção (que usa os
+ * valores padrão).
+ *
+ * @param {Object} [config] Configuração opcional.
+ * @param {string} [config.geocodingBaseUrl] URL base da API de geocodificação.
+ * @param {string} [config.weatherBaseUrl] URL base da API de previsão do tempo.
+ * @param {number} [config.tentativas] Número de tentativas por requisição externa.
+ * @param {number} [config.delayMs] Tempo de espera (ms) entre tentativas.
+ * @returns {http.Server} Instância do servidor HTTP (ainda não escutando).
  */
-const server = http.createServer(async (req, res) => {
+function criarServidor(config = {}) {
 
-    // Permite requisições vindas do navegador
-    res.setHeader(
-        "Access-Control-Allow-Origin",
-        "*"
-    );
+    const geocodingBaseUrl =
+        config.geocodingBaseUrl || "https://geocoding-api.open-meteo.com";
 
-    // Define o formato da resposta
-    res.setHeader(
-        "Content-Type",
-        "application/json; charset=utf-8"
-    );
+    const weatherBaseUrl =
+        config.weatherBaseUrl || "https://api.open-meteo.com";
 
-    // Cria uma URL a partir da requisição
-    const url = new URL(
-        req.url,
-        `http://${req.headers.host}`
-    );
+    const tentativas = config.tentativas || 3;
 
-    console.log(
-        "Requisição recebida:",
-        url.pathname
-    );
+    const delayMs = config.delayMs || 1000;
 
+    const server = http.createServer(async (req, res) => {
 
-    // ==========================================
-    // ROTA /clima
-    // ==========================================
+        // Permite requisições vindas do navegador
+        res.setHeader(
+            "Access-Control-Allow-Origin",
+            "*"
+        );
 
-    if (url.pathname === "/clima") {
+        // Define o formato da resposta
+        res.setHeader(
+            "Content-Type",
+            "application/json; charset=utf-8"
+        );
 
-        // Obtém o nome da cidade enviado na URL
-        const cidade = url.searchParams.get("cidade");
+        // Cria uma URL a partir da requisição
+        const url = new URL(
+            req.url,
+            `http://${req.headers.host}`
+        );
 
         console.log(
-            "Cidade recebida:",
-            cidade
+            "Requisição recebida:",
+            url.pathname
         );
 
 
-        // Verifica se a cidade foi informada
-        if (!cidade) {
+        // ==========================================
+        // ROTA /clima
+        // ==========================================
 
-            res.statusCode = 400;
+        if (url.pathname === "/clima") {
 
-            res.end(
-                JSON.stringify({
-                    erro: "Informe o nome de uma cidade."
-                })
-            );
-
-            return;
-        }
-
-
-        try {
-
-            // ==========================================
-            // 1. GEOCODIFICAÇÃO
-            // ==========================================
-
-            const geocodingUrl =
-                `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(cidade)}&count=1&language=pt&format=json`;
+            // Obtém o nome da cidade enviado na URL
+            const cidade = url.searchParams.get("cidade");
 
             console.log(
-                "Consultando geocodificação..."
+                "Cidade recebida:",
+                cidade
             );
 
-            const dados =
-                await consultarApiHttpsComTentativas(
-                    geocodingUrl
-                );
 
+            // Verifica se a cidade foi informada
+            if (!cidade) {
 
-            // Verifica se a cidade foi encontrada
-            if (
-                !dados.results ||
-                dados.results.length === 0
-            ) {
-
-                res.statusCode = 404;
+                res.statusCode = 400;
 
                 res.end(
                     JSON.stringify({
-                        erro: "Cidade não encontrada."
+                        erro: "Informe o nome de uma cidade."
                     })
                 );
 
@@ -264,137 +258,192 @@ const server = http.createServer(async (req, res) => {
             }
 
 
-            // Obtém os dados da primeira cidade encontrada
-            const localizacao =
-                dados.results[0];
+            try {
+
+                // ==========================================
+                // 1. GEOCODIFICAÇÃO
+                // ==========================================
+
+                const geocodingUrl =
+                    `${geocodingBaseUrl}/v1/search?name=${encodeURIComponent(cidade)}&count=1&language=pt&format=json`;
+
+                console.log(
+                    "Consultando geocodificação..."
+                );
+
+                const dados =
+                    await consultarApiHttpsComTentativas(
+                        geocodingUrl,
+                        tentativas,
+                        delayMs
+                    );
 
 
-            // Obtém latitude e longitude
-            const latitude =
-                localizacao.latitude;
+                // Verifica se a cidade foi encontrada
+                if (
+                    !dados.results ||
+                    dados.results.length === 0
+                ) {
 
-            const longitude =
-                localizacao.longitude;
+                    res.statusCode = 404;
 
+                    res.end(
+                        JSON.stringify({
+                            erro: "Cidade não encontrada."
+                        })
+                    );
 
-            // ==========================================
-            // 2. PREVISÃO DO TEMPO
-            // ==========================================
-
-            const weatherUrl =
-                    `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weather_code,is_day,relative_humidity_2m,wind_speed_10m&timezone=auto`;
-
-            console.log(
-                "Consultando previsão do tempo..."
-            );
+                    return;
+                }
 
 
-            const dadosClima =
-                await consultarApiHttpsComTentativas(
-                    weatherUrl
+                // Obtém os dados da primeira cidade encontrada
+                const localizacao =
+                    dados.results[0];
+
+
+                // Obtém latitude e longitude
+                const latitude =
+                    localizacao.latitude;
+
+                const longitude =
+                    localizacao.longitude;
+
+
+                // ==========================================
+                // 2. PREVISÃO DO TEMPO
+                // ==========================================
+
+                const weatherUrl =
+                        `${weatherBaseUrl}/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weather_code,is_day,relative_humidity_2m,wind_speed_10m&timezone=auto`;
+
+                console.log(
+                    "Consultando previsão do tempo..."
                 );
 
 
-            // ==========================================
-            // 3. OBTÉM OS DADOS DO CLIMA
-            // ==========================================
-
-            const temperatura = dadosClima.current.temperature_2m;
-
-
-            const weatherCode = dadosClima.current.weather_code;
+                const dadosClima =
+                    await consultarApiHttpsComTentativas(
+                        weatherUrl,
+                        tentativas,
+                        delayMs
+                    );
 
 
-            const isDay = dadosClima.current.is_day;
+                // ==========================================
+                // 3. OBTÉM OS DADOS DO CLIMA
+                // ==========================================
+
+                const temperatura = dadosClima.current.temperature_2m;
 
 
-            const horario = dadosClima.current.time;
-
-            const umidade = dadosClima.current.relative_humidity_2m;
-
-            const velocidadeVento = dadosClima.current.wind_speed_10m;
+                const weatherCode = dadosClima.current.weather_code;
 
 
-            // Converte o código meteorológico
-            // para uma descrição compreensível
-
-            const timezone = dadosClima.timezone;
-
-            const descricao = obterDescricaoClima(weatherCode);
+                const isDay = dadosClima.current.is_day;
 
 
+                const horario = dadosClima.current.time;
 
-            // ==========================================
-            // 4. RETORNA OS DADOS PARA O FRONTEND
-            // ==========================================
+                const umidade = dadosClima.current.relative_humidity_2m;
 
-            res.statusCode = 200;
-
-            res.end(
-                JSON.stringify({
-
-                    cidade: localizacao.name,
-                    latitude: latitude,
-                    longitude: longitude,
-                    temperatura: temperatura,
-                    descricao: descricao,
-                    horario: horario,
-                    codigoClima: weatherCode,
-                    isDay: isDay,
-                    umidade: umidade,
-                    velocidadeVento: velocidadeVento,
-                    timezone: timezone
-                })
-            );
+                const velocidadeVento = dadosClima.current.wind_speed_10m;
 
 
-        } catch (erro) {
+                // Converte o código meteorológico
+                // para uma descrição compreensível
 
-            // Registra o erro somente no servidor
-            console.error(
-                "Erro completo:",
-                erro
-            );
+                const timezone = dadosClima.timezone;
 
-
-            res.statusCode = 500;
+                const descricao = obterDescricaoClima(weatherCode);
 
 
-            // Não expõe detalhes internos ao usuário
-            res.end(
-                JSON.stringify({
-                    erro: "⚠️ Não foi possível consultar o clima no momento. Verifique sua conexão e tente novamente."
-                })
-            );
+
+                // ==========================================
+                // 4. RETORNA OS DADOS PARA O FRONTEND
+                // ==========================================
+
+                res.statusCode = 200;
+
+                res.end(
+                    JSON.stringify({
+
+                        cidade: localizacao.name,
+                        latitude: latitude,
+                        longitude: longitude,
+                        temperatura: temperatura,
+                        descricao: descricao,
+                        horario: horario,
+                        codigoClima: weatherCode,
+                        isDay: isDay,
+                        umidade: umidade,
+                        velocidadeVento: velocidadeVento,
+                        timezone: timezone
+                    })
+                );
+
+
+            } catch (erro) {
+
+                // Registra o erro somente no servidor
+                console.error(
+                    "Erro completo:",
+                    erro
+                );
+
+
+                res.statusCode = 500;
+
+
+                // Não expõe detalhes internos ao usuário
+                res.end(
+                    JSON.stringify({
+                        erro: "⚠️ Não foi possível consultar o clima no momento. Verifique sua conexão e tente novamente."
+                    })
+                );
+            }
+
+
+            return;
         }
 
 
-        return;
-    }
+        // ==========================================
+        // ROTA NÃO ENCONTRADA
+        // ==========================================
 
+        res.statusCode = 404;
 
-    // ==========================================
-    // ROTA NÃO ENCONTRADA
-    // ==========================================
+        res.end(
+            JSON.stringify({
+                erro: "Rota não encontrada."
+            })
+        );
+    });
 
-    res.statusCode = 404;
-
-    res.end(
-        JSON.stringify({
-            erro: "Rota não encontrada."
-        })
-    );
-});
+    return server;
+}
 
 
 // ==========================================
-// INICIA O SERVIDOR
+// INICIA O SERVIDOR (apenas quando executado diretamente)
 // ==========================================
 
-server.listen(PORT, () => {
+if (require.main === module) {
 
-    console.log(
-        `Servidor rodando em http://localhost:${PORT}`
-    );
+    criarServidor().listen(PORT, () => {
 
-});
+        console.log(
+            `Servidor rodando em http://localhost:${PORT}`
+        );
+
+    });
+}
+
+
+module.exports = {
+    obterDescricaoClima,
+    consultarApiHttps,
+    consultarApiHttpsComTentativas,
+    criarServidor,
+};
