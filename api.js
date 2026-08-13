@@ -9,7 +9,11 @@ const PORT = process.env.PORT || 3000;
  * em uma descrição compreensível.
  *
  * @param {number} code Código meteorológico.
- * @returns {string} Descrição das condições climáticas.
+ * @returns {string} Descrição das condições climáticas. Se o código não for
+ *   reconhecido, retorna "Condição climática desconhecida" (nunca lança erro).
+ * @example
+ * obterDescricaoClima(0);  // "Céu limpo"
+ * obterDescricaoClima(63); // "Chuva"
  */
 function obterDescricaoClima(code) {
 
@@ -72,6 +76,11 @@ function obterDescricaoClima(code) {
  *
  * @param {string} url URL da API.
  * @returns {Promise<Object>} Dados retornados pela API, convertidos de JSON.
+ * @throws {Error} Se a API responder com status fora da faixa 2xx, se o
+ *   corpo da resposta não for um JSON válido, ou se ocorrer um erro de
+ *   rede (ex.: host inexistente, conexão recusada).
+ * @example
+ * const dados = await consultarApiHttps("https://api.open-meteo.com/v1/forecast?...");
  */
 function consultarApiHttps(url) {
 
@@ -139,6 +148,10 @@ function consultarApiHttps(url) {
  * @param {number} [tentativas=3] Número máximo de tentativas.
  * @param {number} [delayMs=1000] Tempo de espera (ms) entre tentativas.
  * @returns {Promise<Object>} Dados retornados pela API.
+ * @throws {Error} O erro da última tentativa, se todas as tentativas falharem.
+ * @example
+ * // Tenta até 5 vezes, esperando 2s entre cada uma
+ * const dados = await consultarApiHttpsComTentativas(url, 5, 2000);
  */
 async function consultarApiHttpsComTentativas(url, tentativas = 3, delayMs = 1000) {
 
@@ -171,6 +184,95 @@ async function consultarApiHttpsComTentativas(url, tentativas = 3, delayMs = 100
             await new Promise(resolve => setTimeout(resolve, delayMs));
         }
     }
+}
+
+
+/**
+ * Busca a localização (latitude/longitude) de uma cidade, usando a API de
+ * geocodificação da Open-Meteo.
+ *
+ * @param {string} cidade Nome da cidade a ser buscada.
+ * @param {Object} config Configuração da consulta.
+ * @param {string} config.geocodingBaseUrl URL base da API de geocodificação.
+ * @param {number} config.tentativas Número de tentativas em caso de falha.
+ * @param {number} config.delayMs Tempo de espera (ms) entre tentativas.
+ * @returns {Promise<Object|null>} Um objeto com `name`, `latitude` e
+ *   `longitude` da primeira cidade encontrada, ou `null` se nenhuma
+ *   cidade corresponder ao nome informado.
+ * @throws {Error} Se a requisição à API de geocodificação falhar após
+ *   esgotar as tentativas (erro HTTP, JSON inválido ou erro de rede).
+ * @example
+ * const local = await buscarLocalizacao("São Paulo", {
+ *     geocodingBaseUrl: "https://geocoding-api.open-meteo.com",
+ *     tentativas: 3,
+ *     delayMs: 1000,
+ * });
+ * // { name: "São Paulo", latitude: -23.55, longitude: -46.63 }
+ */
+async function buscarLocalizacao(cidade, config) {
+
+    const geocodingUrl =
+        `${config.geocodingBaseUrl}/v1/search?name=${encodeURIComponent(cidade)}&count=1&language=pt&format=json`;
+
+    console.log(
+        "Consultando geocodificação..."
+    );
+
+    const dados =
+        await consultarApiHttpsComTentativas(
+            geocodingUrl,
+            config.tentativas,
+            config.delayMs
+        );
+
+    if (
+        !dados.results ||
+        dados.results.length === 0
+    ) {
+        return null;
+    }
+
+    return dados.results[0];
+}
+
+
+/**
+ * Busca a previsão do tempo atual para uma coordenada geográfica, usando a
+ * API de previsão da Open-Meteo.
+ *
+ * @param {number} latitude Latitude da localização.
+ * @param {number} longitude Longitude da localização.
+ * @param {Object} config Configuração da consulta.
+ * @param {string} config.weatherBaseUrl URL base da API de previsão do tempo.
+ * @param {number} config.tentativas Número de tentativas em caso de falha.
+ * @param {number} config.delayMs Tempo de espera (ms) entre tentativas.
+ * @returns {Promise<Object>} Os dados brutos retornados pela API, contendo
+ *   `timezone` e um objeto `current` com temperatura, código do clima,
+ *   umidade, vento, etc.
+ * @throws {Error} Se a requisição à API de previsão falhar após esgotar
+ *   as tentativas (erro HTTP, JSON inválido ou erro de rede).
+ * @example
+ * const previsao = await buscarPrevisao(-23.55, -46.63, {
+ *     weatherBaseUrl: "https://api.open-meteo.com",
+ *     tentativas: 3,
+ *     delayMs: 1000,
+ * });
+ * // { timezone: "America/Sao_Paulo", current: { temperature_2m: 24.5, ... } }
+ */
+async function buscarPrevisao(latitude, longitude, config) {
+
+    const weatherUrl =
+        `${config.weatherBaseUrl}/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weather_code,is_day,relative_humidity_2m,wind_speed_10m&timezone=auto`;
+
+    console.log(
+        "Consultando previsão do tempo..."
+    );
+
+    return consultarApiHttpsComTentativas(
+        weatherUrl,
+        config.tentativas,
+        config.delayMs
+    );
 }
 
 
@@ -258,32 +360,20 @@ function criarServidor(config = {}) {
             }
 
 
+            const config = { geocodingBaseUrl, weatherBaseUrl, tentativas, delayMs };
+
             try {
 
                 // ==========================================
                 // 1. GEOCODIFICAÇÃO
                 // ==========================================
 
-                const geocodingUrl =
-                    `${geocodingBaseUrl}/v1/search?name=${encodeURIComponent(cidade)}&count=1&language=pt&format=json`;
-
-                console.log(
-                    "Consultando geocodificação..."
-                );
-
-                const dados =
-                    await consultarApiHttpsComTentativas(
-                        geocodingUrl,
-                        tentativas,
-                        delayMs
-                    );
+                const localizacao =
+                    await buscarLocalizacao(cidade, config);
 
 
                 // Verifica se a cidade foi encontrada
-                if (
-                    !dados.results ||
-                    dados.results.length === 0
-                ) {
+                if (!localizacao) {
 
                     res.statusCode = 404;
 
@@ -295,11 +385,6 @@ function criarServidor(config = {}) {
 
                     return;
                 }
-
-
-                // Obtém os dados da primeira cidade encontrada
-                const localizacao =
-                    dados.results[0];
 
 
                 // Obtém latitude e longitude
@@ -314,20 +399,8 @@ function criarServidor(config = {}) {
                 // 2. PREVISÃO DO TEMPO
                 // ==========================================
 
-                const weatherUrl =
-                        `${weatherBaseUrl}/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weather_code,is_day,relative_humidity_2m,wind_speed_10m&timezone=auto`;
-
-                console.log(
-                    "Consultando previsão do tempo..."
-                );
-
-
                 const dadosClima =
-                    await consultarApiHttpsComTentativas(
-                        weatherUrl,
-                        tentativas,
-                        delayMs
-                    );
+                    await buscarPrevisao(latitude, longitude, config);
 
 
                 // ==========================================
@@ -445,5 +518,7 @@ module.exports = {
     obterDescricaoClima,
     consultarApiHttps,
     consultarApiHttpsComTentativas,
+    buscarLocalizacao,
+    buscarPrevisao,
     criarServidor,
 };
