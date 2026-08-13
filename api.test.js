@@ -6,6 +6,8 @@ const {
     obterDescricaoClima,
     consultarApiHttps,
     consultarApiHttpsComTentativas,
+    buscarLocalizacao,
+    buscarPrevisao,
     criarServidor,
 } = require("./api.js");
 
@@ -181,6 +183,76 @@ test("consultarApiHttpsComTentativas - lança erro depois de esgotar as tentativ
     assert.equal(chamadas, 2);
 
     servidor.close();
+});
+
+
+// ==========================================
+// buscarLocalizacao
+// ==========================================
+
+test("buscarLocalizacao - retorna a primeira cidade encontrada", async () => {
+
+    const servidorGeo = await criarServidorMock((req, res) => {
+        res.statusCode = 200;
+        res.end(JSON.stringify({
+            results: [{ name: "Lisboa", latitude: 38.72, longitude: -9.13 }],
+        }));
+    });
+
+    const localizacao = await buscarLocalizacao("Lisboa", {
+        geocodingBaseUrl: urlDoServidor(servidorGeo),
+        tentativas: 1,
+        delayMs: 10,
+    });
+
+    assert.deepEqual(localizacao, { name: "Lisboa", latitude: 38.72, longitude: -9.13 });
+
+    servidorGeo.close();
+});
+
+test("buscarLocalizacao - retorna null quando a cidade não existe", async () => {
+
+    const servidorGeo = await criarServidorMock((req, res) => {
+        res.statusCode = 200;
+        res.end(JSON.stringify({ results: [] }));
+    });
+
+    const localizacao = await buscarLocalizacao("CidadeInexistente", {
+        geocodingBaseUrl: urlDoServidor(servidorGeo),
+        tentativas: 1,
+        delayMs: 10,
+    });
+
+    assert.equal(localizacao, null);
+
+    servidorGeo.close();
+});
+
+
+// ==========================================
+// buscarPrevisao
+// ==========================================
+
+test("buscarPrevisao - retorna os dados brutos de previsão", async () => {
+
+    const servidorClima = await criarServidorMock((req, res) => {
+        res.statusCode = 200;
+        res.end(JSON.stringify({
+            timezone: "Europe/Lisbon",
+            current: { temperature_2m: 18.2, weather_code: 3 },
+        }));
+    });
+
+    const previsao = await buscarPrevisao(38.72, -9.13, {
+        weatherBaseUrl: urlDoServidor(servidorClima),
+        tentativas: 1,
+        delayMs: 10,
+    });
+
+    assert.equal(previsao.timezone, "Europe/Lisbon");
+    assert.equal(previsao.current.temperature_2m, 18.2);
+
+    servidorClima.close();
 });
 
 
