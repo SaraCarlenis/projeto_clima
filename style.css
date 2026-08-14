@@ -583,3 +583,430 @@ body.noite .informacao > i {
 
     transform: none;
 }
+
+
+/* =====================================================
+   PREVISÃO DE 5 DIAS
+===================================================== */
+
+.previsao-dias {
+    display: grid;
+
+    grid-template-columns: repeat(5, 1fr);
+
+    gap: 10px;
+
+    margin-top: 25px;
+}
+
+
+/* =====================================================
+   CARD DE UM DIA
+===================================================== */
+
+.dia-previsao {
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    gap: 6px;
+
+    padding: 12px 6px;
+
+    background: white;
+
+    border-radius: 10px;
+
+    border: 1px solid #e1e8f0;
+
+    transition:
+        background 0.3s ease,
+        transform 0.2s ease;
+}
+
+
+.dia-previsao:hover {
+    transform: translateY(-2px);
+}
+
+
+.dia-previsao i {
+    font-size: 26px;
+
+    color: #1976d2;
+}
+
+
+/* =====================================================
+   DATA DO DIA
+===================================================== */
+
+.dia-previsao-data {
+    font-size: 12px;
+
+    font-weight: bold;
+
+    text-transform: capitalize;
+
+    color: #555;
+}
+
+
+/* =====================================================
+   TEMPERATURAS MÁX/MÍN
+===================================================== */
+
+.dia-previsao-temps {
+    display: flex;
+
+    gap: 6px;
+
+    font-size: 14px;
+}
+
+
+.temp-min {
+    color: #888;
+}
+
+
+/* =====================================================
+   MODO NOITE
+===================================================== */
+
+body.noite .dia-previsao {
+    background: #26334a;
+
+    border-color: #40516d;
+}
+
+
+body.noite .dia-previsao-data {
+    color: #ccc;
+}
+
+
+body.noite .dia-previsao i {
+    color: #64b5f6;
+}
+
+
+body.noite .temp-min {
+    color: #aaa;
+}
+
+
+/* =====================================================
+   RESPONSIVIDADE
+===================================================== */
+
+@media (max-width: 600px) {
+
+    .previsao-dias {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .dia-previsao {
+        padding: 10px 4px;
+    }
+
+    .dia-previsao-data {
+        font-size: 11px;
+    }
+
+    .dia-previsao-temps {
+        font-size: 13px;
+    }
+
+}
+
+
+/* =====================================================
+   FUNDO ANIMADO
+===================================================== */
+
+.fundo-clima {
+    position: fixed;
+    inset: 0;
+
+    overflow: hidden;
+
+    z-index: -1;
+
+    pointer-events: none;
+
+    background: linear-gradient(to bottom, #6ec6ff, #cfe9ff);
+
+    transition: background 1.2s ease;
+}
+
+
+.fundo-clima.fundo-sol {
+    background: linear-gradient(to bottom, #4fc3f7, #ffe082);
+}
+
+
+.fundo-clima.fundo-parcial {
+    background: linear-gradient(to bottom, #64b5f6, #e1f0ff);
+}
+
+
+.fundo-clima.fundo-nublado {
+    background: linear-gradient(to bottom, #90a4ae, #cfd8dc);
+}
+
+
+.fundo-clima.fundo-chuva {
+    background: linear-gradient(to bottom, #546e7a, #90a4ae);
+}
+
+
+.fundo-clima.fundo-trovoada {
+    background: linear-gradient(to bottom, #263238, #455a64);
+}
+
+
+/* Modo noite deixa qualquer fundo mais escuro */
+
+body.noite .fundo-clima {
+    filter: brightness(0.45);
+}
+
+
+/* =====================================================
+   SOL
+===================================================== */
+
+.sol {
+    position: absolute;
+
+    top: 8%;
+    right: 12%;
+
+    width: 90px;
+    height: 90px;
+
+    border-radius: 50%;
+
+    background: radial-gradient(circle, #fff59d, #ffb300);
+
+    box-shadow: 0 0 70px 25px rgba(255, 193, 7, 0.55);
+
+    animation: pulsarSol 3s ease-in-out infinite;
+}
+
+
+@keyframes pulsarSol {
+
+    0%, 100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.08);
+    }
+
+}
+
+
+/* =====================================================
+   NUVENS
+===================================================== */
+
+.nuvem {
+    position: absolute;
+
+    left: -220px;
+
+    width: 90px;
+    height: 34px;
+
+    background: #ffffff;
+
+    border-radius: 30px;
+
+    opacity: 0.9;
+
+    animation-name: flutuarNuvem;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+}
+
+
+.nuvem::before {
+    content: "";
+
+    position: absolute;
+
+    top: -16px;
+    left: 12px;
+
+    width: 40px;
+    height: 40px;
+
+    background: #ffffff;
+
+    border-radius: 50%;
+}
+
+
+.nuvem::after {
+    content: "";
+
+    position: absolute;
+
+    top: -10px;
+    right: 10px;
+
+    width: 32px;
+    height: 32px;
+
+    background: #ffffff;
+
+    border-radius: 50%;
+}
+
+
+@keyframes flutuarNuvem {
+
+    from {
+        transform: translateX(0) scale(var(--escala, 1));
+    }
+
+    to {
+        transform: translateX(calc(100vw + 300px)) scale(var(--escala, 1));
+    }
+
+}
+
+
+/* Nuvens ficam acinzentadas em céu nublado/chuva/trovoada */
+
+.fundo-nublado .nuvem,
+.fundo-chuva .nuvem,
+.fundo-chuva .nuvem::before,
+.fundo-chuva .nuvem::after,
+.fundo-nublado .nuvem::before,
+.fundo-nublado .nuvem::after {
+    background: #eceff1;
+}
+
+
+.fundo-trovoada .nuvem,
+.fundo-trovoada .nuvem::before,
+.fundo-trovoada .nuvem::after {
+    background: #78909c;
+}
+
+
+/* =====================================================
+   CHUVA
+===================================================== */
+
+.gota {
+    position: absolute;
+
+    top: -30px;
+
+    width: 2px;
+    height: 18px;
+
+    background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(200,230,255,0.85));
+
+    animation-name: cair;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+}
+
+
+@keyframes cair {
+
+    to {
+        transform: translateY(110vh);
+    }
+
+}
+
+
+/* =====================================================
+   RAIOS (TROVOADA)
+===================================================== */
+
+.raio-flash {
+    position: absolute;
+    inset: 0;
+
+    background: #ffffff;
+
+    opacity: 0;
+}
+
+
+.raio-flash.ativo {
+    opacity: 0.55;
+
+    transition: opacity 0.05s ease-out;
+}
+
+
+.raio-forma {
+    position: absolute;
+
+    top: 0;
+
+    width: 40px;
+    height: 60vh;
+
+    background: #fff59d;
+
+    clip-path: polygon(
+        40% 0%, 60% 0%, 35% 45%, 55% 45%,
+        20% 100%, 45% 55%, 25% 55%, 50% 0%
+    );
+
+    filter: drop-shadow(0 0 14px #fff176);
+
+    opacity: 0;
+}
+
+
+.raio-forma.ativo {
+    animation: piscarRaio 0.45s ease-out;
+}
+
+
+@keyframes piscarRaio {
+
+    0% {
+        opacity: 0;
+    }
+
+    10% {
+        opacity: 1;
+    }
+
+    20% {
+        opacity: 0.25;
+    }
+
+    30% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
+    }
+
+}
+
+
+/* =====================================================
+   O CONTAINER FICA ACIMA DO FUNDO ANIMADO
+===================================================== */
+
+.container {
+    position: relative;
+    z-index: 1;
+}

@@ -247,8 +247,9 @@ async function buscarLocalizacao(cidade, config) {
  * @param {number} config.tentativas Número de tentativas em caso de falha.
  * @param {number} config.delayMs Tempo de espera (ms) entre tentativas.
  * @returns {Promise<Object>} Os dados brutos retornados pela API, contendo
- *   `timezone` e um objeto `current` com temperatura, código do clima,
- *   umidade, vento, etc.
+ *   `timezone`, um objeto `current` (temperatura, código do clima, umidade,
+ *   vento, etc.) e um objeto `daily` com arrays paralelos de 5 dias
+ *   (`time`, `temperature_2m_max`, `temperature_2m_min`, `weather_code`).
  * @throws {Error} Se a requisição à API de previsão falhar após esgotar
  *   as tentativas (erro HTTP, JSON inválido ou erro de rede).
  * @example
@@ -257,12 +258,15 @@ async function buscarLocalizacao(cidade, config) {
  *     tentativas: 3,
  *     delayMs: 1000,
  * });
- * // { timezone: "America/Sao_Paulo", current: { temperature_2m: 24.5, ... } }
+ * // { timezone: "America/Sao_Paulo", current: { temperature_2m: 24.5, ... }, daily: { time: [...], ... } }
  */
 async function buscarPrevisao(latitude, longitude, config) {
 
     const weatherUrl =
-        `${config.weatherBaseUrl}/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weather_code,is_day,relative_humidity_2m,wind_speed_10m&timezone=auto`;
+        `${config.weatherBaseUrl}/v1/forecast?latitude=${latitude}&longitude=${longitude}` +
+        `&current=temperature_2m,weather_code,is_day,relative_humidity_2m,wind_speed_10m` +
+        `&daily=temperature_2m_max,temperature_2m_min,weather_code` +
+        `&forecast_days=5&timezone=auto`;
 
     console.log(
         "Consultando previsão do tempo..."
@@ -273,6 +277,50 @@ async function buscarPrevisao(latitude, longitude, config) {
         config.tentativas,
         config.delayMs
     );
+}
+
+
+/**
+ * Transforma os dados diários brutos retornados por `buscarPrevisao` em
+ * uma lista simples, pronta para ser exibida no frontend: um objeto por
+ * dia, com temperatura máxima, mínima e descrição do clima já traduzida.
+ *
+ * @param {Object} dadosClima Dados brutos retornados por `buscarPrevisao` (precisa conter `daily`).
+ * @returns {Array<{data: string, temperaturaMaxima: number, temperaturaMinima: number, descricao: string, codigoClima: number}>}
+ *   Lista de previsões diárias, na mesma ordem retornada pela API (do dia
+ *   atual em diante). Retorna uma lista vazia se `dadosClima.daily` não
+ *   existir ou estiver incompleto.
+ * @example
+ * const previsao5Dias = montarPrevisaoDiaria(dadosClima);
+ * // [{ data: "2026-08-13", temperaturaMaxima: 25.1, temperaturaMinima: 15.3, descricao: "Céu limpo", codigoClima: 0 }, ...]
+ */
+function montarPrevisaoDiaria(dadosClima) {
+
+    const diario = dadosClima.daily;
+
+    if (
+        !diario ||
+        !diario.time ||
+        !diario.temperature_2m_max ||
+        !diario.temperature_2m_min ||
+        !diario.weather_code
+    ) {
+        return [];
+    }
+
+    return diario.time.map((data, indice) => ({
+
+        data: data,
+
+        temperaturaMaxima: diario.temperature_2m_max[indice],
+
+        temperaturaMinima: diario.temperature_2m_min[indice],
+
+        descricao: obterDescricaoClima(diario.weather_code[indice]),
+
+        codigoClima: diario.weather_code[indice],
+
+    }));
 }
 
 
@@ -451,7 +499,8 @@ function criarServidor(config = {}) {
                         isDay: isDay,
                         umidade: umidade,
                         velocidadeVento: velocidadeVento,
-                        timezone: timezone
+                        timezone: timezone,
+                        previsao5Dias: montarPrevisaoDiaria(dadosClima)
                     })
                 );
 
@@ -520,5 +569,6 @@ module.exports = {
     consultarApiHttpsComTentativas,
     buscarLocalizacao,
     buscarPrevisao,
+    montarPrevisaoDiaria,
     criarServidor,
 };
