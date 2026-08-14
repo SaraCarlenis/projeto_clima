@@ -8,6 +8,7 @@ const {
     consultarApiHttpsComTentativas,
     buscarLocalizacao,
     buscarPrevisao,
+    montarPrevisaoDiaria,
     criarServidor,
 } = require("./api.js");
 
@@ -257,6 +258,41 @@ test("buscarPrevisao - retorna os dados brutos de previsão", async () => {
 
 
 // ==========================================
+// montarPrevisaoDiaria
+// ==========================================
+
+test("montarPrevisaoDiaria - converte os arrays da API em uma lista de objetos por dia", () => {
+
+    const dadosClima = {
+        daily: {
+            time: ["2026-08-13", "2026-08-14"],
+            temperature_2m_max: [25.1, 26.0],
+            temperature_2m_min: [15.3, 16.1],
+            weather_code: [0, 61],
+        },
+    };
+
+    const previsao = montarPrevisaoDiaria(dadosClima);
+
+    assert.equal(previsao.length, 2);
+    assert.deepEqual(previsao[0], {
+        data: "2026-08-13",
+        temperaturaMaxima: 25.1,
+        temperaturaMinima: 15.3,
+        descricao: "Céu limpo",
+        codigoClima: 0,
+    });
+    assert.equal(previsao[1].descricao, "Chuva");
+});
+
+test("montarPrevisaoDiaria - retorna lista vazia quando não há dados diários", () => {
+
+    assert.deepEqual(montarPrevisaoDiaria({}), []);
+    assert.deepEqual(montarPrevisaoDiaria({ daily: { time: ["2026-08-13"] } }), []);
+});
+
+
+// ==========================================
 // Rota /clima (testes de integração)
 // ==========================================
 
@@ -317,6 +353,12 @@ test("/clima - retorna os dados do clima quando a cidade é encontrada", async (
                 wind_speed_10m: 10,
                 time: "2026-08-13T10:00",
             },
+            daily: {
+                time: ["2026-08-13", "2026-08-14", "2026-08-15", "2026-08-16", "2026-08-17"],
+                temperature_2m_max: [25.1, 26.0, 24.3, 23.8, 27.2],
+                temperature_2m_min: [15.3, 16.1, 14.9, 15.5, 16.8],
+                weather_code: [1, 0, 61, 3, 2],
+            },
         }));
     });
 
@@ -336,6 +378,11 @@ test("/clima - retorna os dados do clima quando a cidade é encontrada", async (
     assert.equal(dados.descricao, "Principalmente limpo");
     assert.equal(dados.umidade, 60);
     assert.equal(dados.velocidadeVento, 10);
+    assert.equal(dados.previsao5Dias.length, 5);
+    assert.equal(dados.previsao5Dias[0].data, "2026-08-13");
+    assert.equal(dados.previsao5Dias[0].temperaturaMaxima, 25.1);
+    assert.equal(dados.previsao5Dias[0].temperaturaMinima, 15.3);
+    assert.equal(dados.previsao5Dias[2].descricao, "Chuva");
 
     servidorGeo.close();
     servidorClima.close();
