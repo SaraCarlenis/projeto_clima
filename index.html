@@ -34,6 +34,17 @@
 <body>
 
 
+    <!-- ==========================================
+         FUNDO ANIMADO (sol, nuvens, chuva, raios)
+    =========================================== -->
+
+    <div
+        id="fundoClima"
+        class="fundo-clima"
+        aria-hidden="true"
+    ></div>
+
+
     <main class="container">
 
 
@@ -322,6 +333,451 @@
 
 
         // ==========================================
+        // FUNÇÃO PARA FORMATAR DATA CURTA (5 DIAS)
+        // ==========================================
+
+        function formatarDataCurta(data) {
+
+
+            const partes =
+                data.split("-");
+
+
+            const ano =
+                Number(partes[0]);
+
+
+            const mes =
+                Number(partes[1]);
+
+
+            const dia =
+                Number(partes[2]);
+
+
+            const dataObjeto =
+                new Date(
+                    ano,
+                    mes - 1,
+                    dia,
+                    12,
+                    0,
+                    0
+                );
+
+
+            return dataObjeto.toLocaleDateString(
+                "pt-BR",
+                {
+
+                    weekday: "short",
+
+                    day: "numeric",
+
+                    month: "short"
+
+                }
+            );
+
+        }
+
+
+
+        // ==========================================
+        // FUNÇÃO PARA MONTAR OS CARDS DE 5 DIAS
+        // ==========================================
+
+        function montarHtmlPrevisao5Dias(previsao5Dias) {
+
+
+            if (!previsao5Dias || previsao5Dias.length === 0) {
+
+                return "";
+
+            }
+
+
+            const cards =
+                previsao5Dias.map((dia) => {
+
+                    const iconeDia =
+                        obterIconeClima(
+                            dia.codigoClima
+                        );
+
+                    return `
+
+                        <div class="dia-previsao">
+
+                            <span class="dia-previsao-data">
+                                ${formatarDataCurta(dia.data)}
+                            </span>
+
+                            <i class="wi ${iconeDia}"></i>
+
+                            <span class="dia-previsao-temps">
+                                <strong>${Math.round(dia.temperaturaMaxima)}°</strong>
+                                <span class="temp-min">${Math.round(dia.temperaturaMinima)}°</span>
+                            </span>
+
+                        </div>
+
+                    `;
+
+                }).join("");
+
+
+            return `
+
+                <div class="previsao-dias">
+                    ${cards}
+                </div>
+
+            `;
+
+        }
+
+
+
+        // ==========================================
+        // FUNDO ANIMADO — CONTROLE DE ESTADO
+        // ==========================================
+
+        const fundoClima =
+            document.getElementById("fundoClima");
+
+
+        let fundoIntervalId = null;
+
+        let fundoTimeoutIds = [];
+
+
+
+        /**
+         * Remove todo o conteúdo e animações do fundo,
+         * preparando para renderizar um novo estado.
+         */
+        function limparFundoClima() {
+
+
+            fundoClima.innerHTML = "";
+
+            fundoClima.className = "fundo-clima";
+
+
+            if (fundoIntervalId) {
+
+                clearInterval(fundoIntervalId);
+
+                fundoIntervalId = null;
+
+            }
+
+
+            fundoTimeoutIds.forEach(
+                (id) => clearTimeout(id)
+            );
+
+            fundoTimeoutIds = [];
+
+        }
+
+
+
+        /**
+         * Agrupa os códigos meteorológicos da Open-Meteo
+         * em categorias visuais simples para o fundo animado.
+         */
+        function categoriaVisualClima(codigo) {
+
+
+            if (codigo === 0) {
+
+                return "sol";
+
+            }
+
+
+            if (codigo === 1 || codigo === 2) {
+
+                return "parcial";
+
+            }
+
+
+            if (codigo >= 95 && codigo <= 99) {
+
+                return "trovoada";
+
+            }
+
+
+            if (
+                (codigo >= 51 && codigo <= 67) ||
+                (codigo >= 80 && codigo <= 82)
+            ) {
+
+                return "chuva";
+
+            }
+
+
+            // Nublado, neblina e neve caem no visual "nublado"
+
+            return "nublado";
+
+        }
+
+
+
+        /**
+         * Cria e anexa um elemento ao fundo animado.
+         */
+        function criarElementoFundo(classe) {
+
+
+            const elemento =
+                document.createElement("div");
+
+
+            elemento.className = classe;
+
+
+            fundoClima.appendChild(elemento);
+
+
+            return elemento;
+
+        }
+
+
+
+        // ==========================================
+        // SOL
+        // ==========================================
+
+        function renderizarSol() {
+
+
+            criarElementoFundo("sol");
+
+        }
+
+
+
+        // ==========================================
+        // NUVENS
+        // ==========================================
+
+        function renderizarNuvens(quantidade) {
+
+
+            for (let i = 0; i < quantidade; i++) {
+
+
+                const nuvem =
+                    criarElementoFundo("nuvem");
+
+
+                const escala =
+                    (0.6 + Math.random() * 0.8).toFixed(2);
+
+
+                const duracao =
+                    (28 + Math.random() * 22).toFixed(1);
+
+
+                const atraso =
+                    (Math.random() * -30).toFixed(1);
+
+
+                nuvem.style.top =
+                    `${5 + Math.random() * 45}%`;
+
+
+                nuvem.style.setProperty(
+                    "--escala",
+                    escala
+                );
+
+
+                nuvem.style.animationDuration =
+                    `${duracao}s`;
+
+
+                nuvem.style.animationDelay =
+                    `${atraso}s`;
+
+            }
+
+        }
+
+
+
+        // ==========================================
+        // CHUVA
+        // ==========================================
+
+        function renderizarChuva(quantidade) {
+
+
+            for (let i = 0; i < quantidade; i++) {
+
+
+                const gota =
+                    criarElementoFundo("gota");
+
+
+                gota.style.left =
+                    `${Math.random() * 100}%`;
+
+
+                const duracao =
+                    (0.5 + Math.random() * 0.6).toFixed(2);
+
+
+                const atraso =
+                    (Math.random() * 2).toFixed(2);
+
+
+                gota.style.animationDuration =
+                    `${duracao}s`;
+
+
+                gota.style.animationDelay =
+                    `${atraso}s`;
+
+            }
+
+        }
+
+
+
+        // ==========================================
+        // RAIOS (TROVOADA)
+        // ==========================================
+
+        function iniciarRaios() {
+
+
+            const flash =
+                criarElementoFundo("raio-flash");
+
+
+            function dispararRaio() {
+
+
+                const raio =
+                    document.createElement("div");
+
+
+                raio.className =
+                    "raio-forma ativo";
+
+
+                raio.style.left =
+                    `${25 + Math.random() * 50}%`;
+
+
+                fundoClima.appendChild(raio);
+
+
+                flash.classList.add("ativo");
+
+
+                const t1 = setTimeout(() => {
+
+                    flash.classList.remove("ativo");
+
+                }, 120);
+
+
+                const t2 = setTimeout(() => {
+
+                    raio.remove();
+
+                }, 500);
+
+
+                fundoTimeoutIds.push(t1, t2);
+
+            }
+
+
+            // Primeiro raio quase imediato, depois em intervalos aleatórios
+
+            dispararRaio();
+
+
+            fundoIntervalId = setInterval(
+                dispararRaio,
+                2500 + Math.random() * 3000
+            );
+
+        }
+
+
+
+        // ==========================================
+        // FUNÇÃO PRINCIPAL — ATUALIZA O FUNDO ANIMADO
+        // ==========================================
+
+        function atualizarFundoClima(codigoClima) {
+
+
+            limparFundoClima();
+
+
+            const categoria =
+                categoriaVisualClima(codigoClima);
+
+
+            fundoClima.classList.add(
+                `fundo-${categoria}`
+            );
+
+
+            if (categoria === "sol") {
+
+                renderizarSol();
+
+            } else if (categoria === "parcial") {
+
+                renderizarSol();
+
+                renderizarNuvens(4);
+
+            } else if (categoria === "nublado") {
+
+                renderizarNuvens(7);
+
+            } else if (categoria === "chuva") {
+
+                renderizarNuvens(5);
+
+                renderizarChuva(60);
+
+            } else if (categoria === "trovoada") {
+
+                renderizarNuvens(6);
+
+                renderizarChuva(70);
+
+                iniciarRaios();
+
+            }
+
+        }
+
+
+
+        // Estado inicial: começa com um céu de sol
+
+        atualizarFundoClima(0);
+
+
+
+        // ==========================================
         // EVENTO DO FORMULÁRIO
         // ==========================================
 
@@ -499,6 +955,16 @@
 
 
                     // ==================================
+                    // ATUALIZA O FUNDO ANIMADO
+                    // ==================================
+
+                    atualizarFundoClima(
+                        dados.codigoClima
+                    );
+
+
+
+                    // ==================================
                     // SEPARA DATA E HORA
                     // ==================================
 
@@ -646,6 +1112,9 @@
 
 
                         </div>
+
+
+                        ${montarHtmlPrevisao5Dias(dados.previsao5Dias)}
 
                     `;
 
