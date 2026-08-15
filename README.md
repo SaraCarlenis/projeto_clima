@@ -136,4 +136,4 @@ O projeto consome serviços e recursos de terceiros com suas próprias
 licenças — Open-Meteo (CC BY 4.0, uso gratuito restrito a fins
 não-comerciais) e Weather Icons (SIL OFL 1.1 / MIT). Créditos completos
 em [`NOTICE.md`](./NOTICE.md) e análise de compatibilidade em
-[`COMPLIANCE.md`](./COMPLIANCE.md).
+[`COMPLIANCE.md`](./COMPLIANCE.md). 
