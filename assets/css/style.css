@@ -18,8 +18,11 @@ body {
     min-height: 100vh;
 
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
+
+    padding: 30px 20px;
 
     background: #eaf4ff;
     color: #222;
@@ -1009,4 +1012,51 @@ body.noite .fundo-clima {
 .container {
     position: relative;
     z-index: 1;
+}
+
+
+/* =====================================================
+   AVISO DE PRIVACIDADE (dentro do rodapé)
+===================================================== */
+
+.aviso-privacidade {
+    margin-top: 6px;
+
+    font-size: 11px;
+
+    line-height: 1.5;
+
+    color: rgba(255, 255, 255, 0.65);
+}
+
+
+/* =====================================================
+   RODAPÉ DE CRÉDITOS
+===================================================== */
+
+.creditos {
+    position: relative;
+    z-index: 1;
+
+    max-width: 500px;
+    width: 90%;
+
+    margin-top: 20px;
+
+    padding: 10px;
+
+    font-size: 12px;
+
+    color: rgba(255, 255, 255, 0.85);
+
+    text-align: center;
+}
+
+
+.creditos a {
+    color: inherit;
+
+    font-weight: bold;
+
+    text-decoration: underline;
 }
