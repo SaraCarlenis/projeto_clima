@@ -7,7 +7,9 @@ Aplicação web simples para consultar a previsão do tempo atual de qualquer ci
 - Busca de clima por nome de cidade (ex.: *São Paulo*, *Roma*, *Lisboa*)
 - Geocodificação automática (converte o nome da cidade em latitude/longitude)
 - Exibição de temperatura, descrição do clima, umidade e velocidade do vento
+- **Previsão para os próximos 5 dias**, com temperaturas máxima e mínima diárias
 - Ícones visuais de acordo com a condição climática (Weather Icons)
+- **Fundo animado** que muda conforme a condição climática (sol, nuvens, sol entre nuvens, chuva e raios em tempestade)
 - Tema claro/escuro automático conforme o horário (dia/noite) da cidade consultada
 - Data e hora completas da consulta
 - Tratamento de erros para cidade inválida, falha na API e problemas de rede
@@ -24,10 +26,14 @@ Aplicação web simples para consultar a previsão do tempo atual de qualquer ci
 ```
 projeto_clima/
 ├── index.html      # Frontend: formulário e exibição do resultado
-├── style.css        # Estilos, responsividade e temas dia/noite
+├── style.css        # Estilos, responsividade, temas dia/noite e fundo animado
 ├── api.js            # Backend: servidor HTTP e consumo da API Open-Meteo
 ├── api.test.js       # Testes automatizados do backend
-└── README.md
+├── README.md
+├── SECURITY.md       # Auditoria de segurança e privacidade
+├── COMPLIANCE.md     # Auditoria de licenciamento e conformidade
+├── LICENSE           # Licença do projeto (MIT — inglês e português)
+└── NOTICE.md         # Créditos e atribuições de terceiros
 ```
 
 ## Pré-requisitos
@@ -84,7 +90,16 @@ Resposta de sucesso (200):
   "isDay": 1,
   "umidade": 60,
   "velocidadeVento": 10,
-  "timezone": "America/Sao_Paulo"
+  "timezone": "America/Sao_Paulo",
+  "previsao5Dias": [
+    {
+      "data": "2026-08-13",
+      "temperaturaMaxima": 25.1,
+      "temperaturaMinima": 15.3,
+      "descricao": "Principalmente limpo",
+      "codigoClima": 1
+    }
+  ]
 }
 ```
 
@@ -95,10 +110,30 @@ Possíveis respostas de erro:
 | Cidade não encontrada | 404 | `{ "erro": "Cidade não encontrada." }` |
 | Falha na API externa / rede | 500 | `{ "erro": "⚠️ Não foi possível consultar o clima no momento..." }` |
 
+## Privacidade
+
+Esta aplicação **não coleta, armazena nem compartilha dados pessoais**. O
+único dado enviado a terceiros é o nome da cidade digitado pelo usuário,
+que é repassado à API de geocodificação da Open-Meteo apenas para
+localizar suas coordenadas geográficas. Não há cookies, `localStorage`,
+contas de usuário ou rastreamento de qualquer tipo.
+
+Detalhes completos na auditoria: [`SECURITY.md`](./SECURITY.md).
+
 ## Status do projeto
 
-Este README reflete o estado do projeto até a etapa de testes e documentação (`03_testes` e `04_doc_review`). Funcionalidades adicionais, licenciamento e auditoria de segurança serão incorporados nas etapas seguintes.
+Projeto completo até a etapa de Ética e Segurança (`06_etica_seguranca`),
+incluindo testes automatizados, documentação, previsão estendida de 5
+dias, fundo animado por condição climática, e auditorias de segurança e
+licenciamento.
 
 ## Licenciamento
 
-*(a definir na etapa de Ética e Segurança do projeto)*
+Este projeto é distribuído sob a [licença MIT](./LICENSE) (texto em
+inglês e português).
+
+O projeto consome serviços e recursos de terceiros com suas próprias
+licenças — Open-Meteo (CC BY 4.0, uso gratuito restrito a fins
+não-comerciais) e Weather Icons (SIL OFL 1.1 / MIT). Créditos completos
+em [`NOTICE.md`](./NOTICE.md) e análise de compatibilidade em
+[`COMPLIANCE.md`](./COMPLIANCE.md).
