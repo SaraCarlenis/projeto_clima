@@ -61,7 +61,7 @@ body.noite {
     width: 90%;
     max-width: 500px;
 
-    padding: 30px;
+    padding: 22px 26px;
 
     background: white;
 
@@ -200,9 +200,9 @@ button:active {
 ===================================================== */
 
 .resultado {
-    margin-top: 25px;
+    margin-top: 16px;
 
-    padding: 25px;
+    padding: 18px;
 
     border-radius: 12px;
 
@@ -238,9 +238,9 @@ body.noite .resultado {
 .icone-clima {
     display: block;
 
-    margin: 10px 0 15px;
+    margin: 6px 0 10px;
 
-    font-size: 70px;
+    font-size: 54px;
 }
 
 
@@ -249,9 +249,9 @@ body.noite .resultado {
 ===================================================== */
 
 .temperatura {
-    margin: 10px 0;
+    margin: 6px 0;
 
-    font-size: 48px;
+    font-size: 38px;
 
     font-weight: bold;
 }
@@ -1012,6 +1012,10 @@ body.noite .fundo-clima {
 .container {
     position: relative;
     z-index: 1;
+
+    max-height: 82vh;
+
+    overflow-y: auto;
 }
 
 
