@@ -45,6 +45,8 @@
     ></div>
 
 
+    <div id="pageWrapper" class="page-wrapper">
+
     <main class="container">
 
 
@@ -143,6 +145,9 @@
         </p>
 
     </footer>
+
+    </div>
+    <!-- fecha #pageWrapper -->
 
 
 
@@ -817,9 +822,62 @@
 
 
 
+        // ==========================================
+        // AUTO-ESCALA — encolhe o conteúdo se não
+        // couber na altura da tela (evita rolagem)
+        // ==========================================
+
+        const pageWrapper =
+            document.getElementById("pageWrapper");
+
+
+        function ajustarEscalaPagina() {
+
+
+            // Remove qualquer escala anterior antes de medir
+
+            pageWrapper.style.transform = "none";
+
+
+            const alturaConteudo =
+                pageWrapper.scrollHeight;
+
+
+            const alturaDisponivel =
+                window.innerHeight - 16;
+
+
+            if (alturaConteudo > alturaDisponivel) {
+
+
+                const escala =
+                    alturaDisponivel / alturaConteudo;
+
+
+                pageWrapper.style.transform =
+                    `scale(${escala})`;
+
+            }
+
+        }
+
+
+        // Reaplica sempre que a janela mudar de tamanho
+
+        window.addEventListener(
+            "resize",
+            ajustarEscalaPagina
+        );
+
+
         // Estado inicial: começa com um céu de sol
 
         atualizarFundoClima(0);
+
+
+        // Primeiro ajuste, já com o conteúdo inicial
+
+        ajustarEscalaPagina();
 
 
 
@@ -863,6 +921,9 @@
                     `;
 
 
+                    ajustarEscalaPagina();
+
+
                     return;
 
                 }
@@ -903,6 +964,9 @@
                     </p>
 
                 `;
+
+
+                ajustarEscalaPagina();
 
 
 
@@ -982,6 +1046,9 @@
                             </p>
 
                         `;
+
+
+                        ajustarEscalaPagina();
 
 
                         return;
@@ -1165,6 +1232,9 @@
                     `;
 
 
+                    ajustarEscalaPagina();
+
+
                 } catch (erro) {
 
 
@@ -1187,6 +1257,9 @@
                         </p>
 
                     `;
+
+
+                    ajustarEscalaPagina();
 
 
                 } finally {

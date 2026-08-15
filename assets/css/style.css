@@ -1012,10 +1012,19 @@ body.noite .fundo-clima {
 .container {
     position: relative;
     z-index: 1;
+}
 
-    max-height: 82vh;
 
-    overflow-y: auto;
+/* =====================================================
+   WRAPPER (permite escalar card + rodapé juntos)
+===================================================== */
+
+.page-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    transform-origin: center center;
 }
 
 
