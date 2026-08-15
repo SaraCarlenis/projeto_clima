@@ -9,7 +9,7 @@ atribuições abaixo cumprem as obrigações de licenciamento de cada um.
 - **Licença dos dados:** [Creative Commons Attribution 4.0 International (CC BY 4.0)](https://creativecommons.org/licenses/by/4.0/)
 - **Atribuição:**
   > Dados meteorológicos por [Open-Meteo.com](https://open-meteo.com/), sob licença CC BY 4.0.
-- **Nota:** este projeto não redistribui nem incorpora o código-fonte da Open-Meteo (que é licenciado sob AGPLv3) — apenas consome a API pública. O uso gratuito da API é restrito a fins não-comerciais (ver `COMPLIANCE.md`).
+- **Nota:** este projeto não redistribui nem incorpora o código-fonte da Open-Meteo (que é licenciado sob AGPLv3) — apenas consome a API pública. O uso gratuito da API é restrito a fins não-comerciais (ver `LICENSE_COMPLIANCE.md`).
 
 ## Weather Icons
 

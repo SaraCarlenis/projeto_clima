@@ -1,0 +1,14 @@
+{
+  "name": "projeto-clima",
+  "version": "1.0.0",
+  "description": "Aplicação de previsão do tempo em HTML, CSS e JavaScript puro, consumindo a API Open-Meteo.",
+  "main": "api.js",
+  "scripts": {
+    "start": "node api.js",
+    "test": "node --test"
+  },
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  }
+}

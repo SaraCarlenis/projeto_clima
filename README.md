@@ -25,15 +25,21 @@ Aplicação web simples para consultar a previsão do tempo atual de qualquer ci
 
 ```
 projeto_clima/
-├── index.html      # Frontend: formulário e exibição do resultado
-├── style.css        # Estilos, responsividade, temas dia/noite e fundo animado
-├── api.js            # Backend: servidor HTTP e consumo da API Open-Meteo
-├── api.test.js       # Testes automatizados do backend
+├── assets/
+│   ├── css/
+│   │   └── style.css          # Estilos, responsividade, temas dia/noite e fundo animado
+│   ├── img/                   # Reservado para imagens estáticas do projeto
+│   └── js/                    # Reservado para JS de frontend adicional
+├── tests/
+│   └── api.test.js            # Testes automatizados do backend
+├── api.js                     # Backend: servidor HTTP e consumo da API Open-Meteo
+├── index.html                 # Frontend: formulário e exibição do resultado
+├── package.json
 ├── README.md
-├── SECURITY.md       # Auditoria de segurança e privacidade
-├── COMPLIANCE.md     # Auditoria de licenciamento e conformidade
-├── LICENSE           # Licença do projeto (MIT — inglês e português)
-└── NOTICE.md         # Créditos e atribuições de terceiros
+├── SECURITY_PRIVACY_REPORT.md # Auditoria de segurança e privacidade
+├── LICENSE_COMPLIANCE.md      # Auditoria de licenciamento e conformidade
+├── LICENSE                    # Licença do projeto (MIT — inglês e português)
+└── NOTICE.md                  # Créditos e atribuições de terceiros
 ```
 
 ## Pré-requisitos
@@ -118,7 +124,7 @@ que é repassado à API de geocodificação da Open-Meteo apenas para
 localizar suas coordenadas geográficas. Não há cookies, `localStorage`,
 contas de usuário ou rastreamento de qualquer tipo.
 
-Detalhes completos na auditoria: [`SECURITY.md`](./SECURITY.md).
+Detalhes completos na auditoria: [`SECURITY_PRIVACY_REPORT.md`](./SECURITY_PRIVACY_REPORT.md).
 
 ## Status do projeto
 
@@ -136,4 +142,4 @@ O projeto consome serviços e recursos de terceiros com suas próprias
 licenças — Open-Meteo (CC BY 4.0, uso gratuito restrito a fins
 não-comerciais) e Weather Icons (SIL OFL 1.1 / MIT). Créditos completos
 em [`NOTICE.md`](./NOTICE.md) e análise de compatibilidade em
-[`COMPLIANCE.md`](./COMPLIANCE.md). 
+[`LICENSE_COMPLIANCE.md`](./LICENSE_COMPLIANCE.md).
