@@ -17,7 +17,7 @@
 
     <link
         rel="stylesheet"
-        href="style.css"
+        href="assets/css/style.css"
     >
 
 
@@ -102,6 +102,18 @@
 
 
         <!-- ==========================================
+             AVISO DE PRIVACIDADE
+        =========================================== -->
+
+        <p class="aviso-privacidade">
+            🔒 O nome da cidade digitado é enviado apenas à Open-Meteo,
+            para localizar suas coordenadas geográficas e consultar o
+            clima. Esta aplicação não armazena, não rastreia e não
+            compartilha nenhum dado pessoal.
+        </p>
+
+
+        <!-- ==========================================
              RESULTADO
         =========================================== -->
 
@@ -118,6 +130,24 @@
 
 
     </main>
+
+
+    <!-- ==========================================
+         RODAPÉ — ATRIBUIÇÕES OBRIGATÓRIAS
+    =========================================== -->
+
+    <footer class="creditos">
+
+        <p>
+            Dados meteorológicos por
+            <a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo.com</a>
+            (licença
+            <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">CC BY 4.0</a>).
+            Ícones por
+            <a href="https://erikflowers.github.io/weather-icons/" target="_blank" rel="noopener noreferrer">Weather Icons</a>.
+        </p>
+
+    </footer>
 
 
 
@@ -142,6 +172,27 @@
 
         const resultado =
             document.getElementById("resultado");
+
+
+
+        // ==========================================
+        // URL DO BACKEND (detecta ambiente local ou produção)
+        // ==========================================
+
+        /*
+            Em localhost, usa o backend rodando na sua máquina.
+            Em qualquer outro domínio (ex.: GitHub Pages), usa o
+            backend publicado. Troque a URL abaixo pela URL real
+            do seu backend depois de publicá-lo (ex.: no Render).
+        */
+
+        const BACKEND_URL =
+            (
+                window.location.hostname === "localhost" ||
+                window.location.hostname === "127.0.0.1"
+            )
+                ? "http://localhost:3000"
+                : "https://projeto-clima-qw14.onrender.com";
 
 
 
@@ -881,7 +932,7 @@
                     // ==================================
 
                     const url =
-                        `http://localhost:3000/clima?${parametros}`;
+                        `${BACKEND_URL}/clima?${parametros}`;
 
 
 
