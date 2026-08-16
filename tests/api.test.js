@@ -337,7 +337,7 @@ test("/clima - retorna os dados do clima quando a cidade é encontrada", async (
     const servidorGeo = await criarServidorMock((req, res) => {
         res.statusCode = 200;
         res.end(JSON.stringify({
-            results: [{ name: "São Paulo", latitude: -23.55, longitude: -46.63 }],
+            results: [{ name: "São Paulo", country: "Brazil", latitude: -23.55, longitude: -46.63 }],
         }));
     });
 
@@ -374,6 +374,7 @@ test("/clima - retorna os dados do clima quando a cidade é encontrada", async (
 
     assert.equal(resposta.status, 200);
     assert.equal(dados.cidade, "São Paulo");
+    assert.equal(dados.pais, "Brazil");
     assert.equal(dados.temperatura, 24.5);
     assert.equal(dados.descricao, "Principalmente limpo");
     assert.equal(dados.umidade, 60);

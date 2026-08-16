@@ -196,9 +196,9 @@ async function consultarApiHttpsComTentativas(url, tentativas = 3, delayMs = 100
  * @param {string} config.geocodingBaseUrl URL base da API de geocodificação.
  * @param {number} config.tentativas Número de tentativas em caso de falha.
  * @param {number} config.delayMs Tempo de espera (ms) entre tentativas.
- * @returns {Promise<Object|null>} Um objeto com `name`, `latitude` e
- *   `longitude` da primeira cidade encontrada, ou `null` se nenhuma
- *   cidade corresponder ao nome informado.
+ * @returns {Promise<Object|null>} Um objeto com `name`, `country`,
+ *   `latitude` e `longitude` da primeira cidade encontrada, ou `null`
+ *   se nenhuma cidade corresponder ao nome informado.
  * @throws {Error} Se a requisição à API de geocodificação falhar após
  *   esgotar as tentativas (erro HTTP, JSON inválido ou erro de rede).
  * @example
@@ -207,7 +207,7 @@ async function consultarApiHttpsComTentativas(url, tentativas = 3, delayMs = 100
  *     tentativas: 3,
  *     delayMs: 1000,
  * });
- * // { name: "São Paulo", latitude: -23.55, longitude: -46.63 }
+ * // { name: "São Paulo", country: "Brazil", latitude: -23.55, longitude: -46.63 }
  */
 async function buscarLocalizacao(cidade, config) {
 
@@ -490,6 +490,7 @@ function criarServidor(config = {}) {
                     JSON.stringify({
 
                         cidade: localizacao.name,
+                        pais: localizacao.country || null,
                         latitude: latitude,
                         longitude: longitude,
                         temperatura: temperatura,
